@@ -1046,8 +1046,8 @@ class QwiicIcm20948(object):
 		self.setSampleMode((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), ICM_20948_Sample_Mode_Continuous)
 
 		# set full scale range for both accel and gryo (separate functions)
-		self.setFullScaleRangeAccel(gpm2)
-		self.setFullScaleRangeGyro(dps250)
+		self.setFullScaleRangeAccel(gpm4)
+		self.setFullScaleRangeGyro(dps500)
 
 		# set low pass filter for both accel and gyro (separate functions)
 		self.setDLPFcfgAccel(acc_d473bw_n499bw)
@@ -1060,3 +1060,60 @@ class QwiicIcm20948(object):
 		self.startupMagnetometer()
 
 		return True
+
+	def getCorrectedAgmt(self):
+		""" 
+			Reads and updates raw values from accel, gyro, mag and temp of the ICM90248 module
+
+			:return: Returns True if I2C readBlock was successful, otherwise False.
+			:rtype: bool
+
+		"""
+
+		# Read all of the readings starting at AGB0_REG_ACCEL_XOUT_H
+		numbytes = 14 + 9  # Read Accel, gyro, temp, and 9 bytes of mag
+		self.setBank(0)
+		buff = self._i2c.readBlock(
+			self.address, self.AGB0_REG_ACCEL_XOUT_H, numbytes)
+
+		self.axRaw = ((buff[0] << 8) | (buff[1] & 0xFF))
+		self.ayRaw = ((buff[2] << 8) | (buff[3] & 0xFF))
+		self.azRaw = ((buff[4] << 8) | (buff[5] & 0xFF))
+
+		self.gxRaw = ((buff[6] << 8) | (buff[7] & 0xFF))
+		self.gyRaw = ((buff[8] << 8) | (buff[9] & 0xFF))
+		self.gzRaw = ((buff[10] << 8) | (buff[11] & 0xFF))
+
+		self.tmpRaw = ((buff[12] << 8) | (buff[13] & 0xFF))
+
+		self.magStat1 = buff[14]
+		# Mag data is read little endian
+		self.mxRaw = ((buff[16] << 8) | (buff[15] & 0xFF))
+		self.myRaw = ((buff[18] << 8) | (buff[17] & 0xFF))
+		self.mzRaw = ((buff[20] << 8) | (buff[19] & 0xFF))
+		self.magStat2 = buff[22]
+
+		# Convert all values to signed (because python treats all ints as 32 bit ints
+		# and does not see the MSB as the sign of our 16 bit int raw value)
+
+		# scaling taken from https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary/blob/master/src/ICM_20948.cpp
+		# scaling is for gpm4/dps500
+		# in m/s^2
+		self.ax = self.ToSignedInt(self.axRaw) / 8.192 * 1000 * 9.81
+		self.ay = self.ToSignedInt(self.ayRaw) / 8.192 * 1000 * 9.81
+		self.az = self.ToSignedInt(self.azRaw) / 8.192 * 1000 * 9.81
+
+		# in rad/s
+		self.gx = self.ToSignedInt(self.gxRaw) / 65.5 / 180 * 3.14159265
+		self.gy = self.ToSignedInt(self.gyRaw) / 65.5 / 180 * 3.14159265
+		self.gz = self.ToSignedInt(self.gzRaw) / 65.5 / 180 * 3.14159265
+
+		# in micro tesla
+		self.mx = self.ToSignedInt(self.mxRaw) * 0.15
+		self.my = self.ToSignedInt(self.myRaw) * 0.15
+		self.mz = self.ToSignedInt(self.mzRaw) * 0.15
+		# check for data read error
+		if buff:
+			return True
+		else:
+			return False
