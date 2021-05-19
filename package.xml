@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ROS_ICM20948_PUBLISHER</name>
+  <name>ros_icm20948_publisher</name>
   <version>0.0.1</version>
-  <description>The ROS_ICM20948_PUBLISHER package</description>
+  <description>The ros_icm20948_publisher package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(ROS_ICM20948_PUBLISHER)
+project(ros_icm20948_publisher)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
