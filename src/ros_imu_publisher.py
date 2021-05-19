@@ -15,12 +15,12 @@ def icm20948_node():
     rospy.init_node('icm20948')
 
     rate = rospy.Rate(100)
-    rospy.loginfo(rospy.get_caller_id() + "  icm20948 node launched.")
+    rospy.loginfo("ICM20948 IMU publisher node launched. Publishing to /imu/data_temp and /imu/mag.")
 
     IMU = qwiic_icm20948.QwiicIcm20948()
 
     while IMU.connected == False:
-        message = "The Qwiic ICM20948 device isn't connected to the system. Please check your connection"
+        message = "The Qwiic ICM20948 device cannot be found. Check your connection or i2c bus number specified in Qwiic_I2C."
         rospy.loginfo(message)
 
     IMU.begin()
@@ -56,7 +56,7 @@ def icm20948_node():
 
         rate.sleep()
 
-    rospy.loginfo(rospy.get_caller_id() + "  icm20948 node finished")
+    rospy.loginfo("ICM20948 publisher node closing")
 
 
 if __name__ == '__main__':
