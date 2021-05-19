@@ -1046,8 +1046,10 @@ class QwiicIcm20948(object):
 		self.setSampleMode((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), ICM_20948_Sample_Mode_Continuous)
 
 		# set full scale range for both accel and gryo (separate functions)
-		self.setFullScaleRangeAccel(gpm4)
+		self.setFullScaleRangeAccel(gpm16)
+		self.accel_scale = 1 / 2048 * 9.81
 		self.setFullScaleRangeGyro(dps500)
+		self.gyro_scale = 1 / 65.5 / 180 * 3.14159265
 
 		# set low pass filter for both accel and gyro (separate functions)
 		self.setDLPFcfgAccel(acc_d473bw_n499bw)
@@ -1096,17 +1098,17 @@ class QwiicIcm20948(object):
 		# Convert all values to signed (because python treats all ints as 32 bit ints
 		# and does not see the MSB as the sign of our 16 bit int raw value)
 
-		# scaling taken from https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary/blob/master/src/ICM_20948.cpp
-		# scaling is for gpm4/dps500
+		# scaling taken from https://invensense.tdk.com/wp-content/uploads/2016/06/DS-000189-ICM-20948-v1.3.pdf
+		# scaling is for gpm16/dps500
 		# in m/s^2
-		self.ax = self.ToSignedInt(self.axRaw) / 8.192 * 1000 * 9.81
-		self.ay = self.ToSignedInt(self.ayRaw) / 8.192 * 1000 * 9.81
-		self.az = self.ToSignedInt(self.azRaw) / 8.192 * 1000 * 9.81
+		self.ax = self.ToSignedInt(self.axRaw) * self.accel_scale
+		self.ay = self.ToSignedInt(self.ayRaw) * self.accel_scale
+		self.az = self.ToSignedInt(self.azRaw) * self.accel_scale
 
 		# in rad/s
-		self.gx = self.ToSignedInt(self.gxRaw) / 65.5 / 180 * 3.14159265
-		self.gy = self.ToSignedInt(self.gyRaw) / 65.5 / 180 * 3.14159265
-		self.gz = self.ToSignedInt(self.gzRaw) / 65.5 / 180 * 3.14159265
+		self.gx = self.ToSignedInt(self.gxRaw) * self.gyro_scale
+		self.gy = self.ToSignedInt(self.gyRaw) * self.gyro_scale
+		self.gz = self.ToSignedInt(self.gzRaw) * self.gyro_scale
 
 		# in micro tesla
 		self.mx = self.ToSignedInt(self.mxRaw) * 0.15
