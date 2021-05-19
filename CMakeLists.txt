@@ -27,7 +27,7 @@ include_directories(
 
 
 catkin_install_python(PROGRAMS
-  scripts/ros_imu_publisher.py
+  src/ros_imu_publisher.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
