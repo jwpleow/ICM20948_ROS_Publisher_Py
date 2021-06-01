@@ -31,7 +31,8 @@ def icm20948_node():
             IMU.getCorrectedAgmt()
             raw_msg = Imu()
             raw_msg.header.stamp = timestamp
-
+            raw_msg.header.frame_id = "imu_link"
+            
             raw_msg.linear_acceleration.x = IMU.ax
             raw_msg.linear_acceleration.y = IMU.ay
             raw_msg.linear_acceleration.z = IMU.az
@@ -48,6 +49,7 @@ def icm20948_node():
 
             mag_msg = MagneticField()
             mag_msg.header.stamp = timestamp
+            mag_msg.header.frame_id = "imu_link"
             mag_msg.magnetic_field.x = IMU.mx
             mag_msg.magnetic_field.y = IMU.my
             mag_msg.magnetic_field.z = IMU.mz
